@@ -6,6 +6,8 @@ require "rule_actionmailer/version"
 
 module RuleActionmailer
   class DeliveryMethod
+    class DeliveryFailure < RuntimeError; end
+
     attr_reader :mailer
 
     def initialize(options)
@@ -19,7 +21,12 @@ module RuleActionmailer
     def deliver!(mail)
       req = Net::HTTP::Post.new(@uri.request_uri, "Content-Type" => "application/json")
       req.body = mail_content(mail).merge(apikey: @api_key).to_json
-      @http.request(req).body
+      response = @http.request(req)
+      if response.code == "200"
+        response.body
+      else
+        raise(DeliveryFailure, "Delivery failed with code #{response.code}: #{response.body}")
+      end
     end
 
     def mail_content(mail)
