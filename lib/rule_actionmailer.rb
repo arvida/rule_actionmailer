@@ -13,6 +13,7 @@ module RuleActionmailer
       @api_key  = options[:api_key]
       @uri = URI.parse("#{@base_url}/transactionals")
       @http = Net::HTTP.new(@uri.host, @uri.port)
+      @http.use_ssl = true if @uri.scheme == 'https'
     end
 
     def deliver!(mail)
